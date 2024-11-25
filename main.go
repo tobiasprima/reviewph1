@@ -54,4 +54,9 @@ func main() {
 	go produce(numbers)
 	go consume(numbers)
 
+
+	// Task 4. Buffered channel
+	bufferedChannel := make(chan int, 5)
+	go produce(bufferedChannel)
+	go consume(bufferedChannel)
 }
