@@ -18,6 +18,20 @@ func printLetters() {
 	}
 }
 
+// 3. Produce and consume functions
+func produce(ch chan int) {
+	for i := 1; i <= 10; i++ {
+		ch <- i
+	}
+	close(ch)
+}
+
+func consume(ch chan int) {
+	for num := range ch {
+		fmt.Printf("Consumed: %d\n", num)
+	}
+}
+
 
 // 2. Use sync.WaitGroup to wait for goroutines to complete
 func main() {
@@ -34,5 +48,10 @@ func main() {
 		printLetters()
 	}()
 	wg.Wait()
+
+	// Task 3. Produce and consume using a channel
+	numbers := make(chan int)
+	go produce(numbers)
+	go consume(numbers)
 
 }
