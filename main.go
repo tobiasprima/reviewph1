@@ -1,6 +1,9 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"sync"
+)
 
 // 1. Functions to print numbers and letters concurrently
 func printNumbers() {
@@ -15,8 +18,21 @@ func printLetters() {
 	}
 }
 
-func main(){
-	// 1
-	printNumbers()
-	printLetters()
+
+// 2. Use sync.WaitGroup to wait for goroutines to complete
+func main() {
+	var wg sync.WaitGroup
+
+	// Task 1.3 & 2.1, 2.2
+	wg.Add(2)
+	go func() {
+		defer wg.Done()
+		printNumbers()
+	}()
+	go func() {
+		defer wg.Done()
+		printLetters()
+	}()
+	wg.Wait()
+
 }
