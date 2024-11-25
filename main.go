@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"sync"
 )
@@ -32,6 +33,22 @@ func consume(ch chan int) {
 	}
 }
 
+func distributeNumbers(even, odd chan int, errChan chan error) {
+	defer close(even)
+	defer close(odd)
+	defer close(errChan)
+
+	for i := 1; i <= 25; i++ { // intentionally going beyond 20 for error demonstration
+		if i > 20 {
+			errChan <- errors.New(fmt.Sprintf("Invalid number: %d", i))
+		} else if i%2 == 0 {
+			even <- i
+		} else {
+			odd <- i
+		}
+	}
+}
+
 
 // 2. Use sync.WaitGroup to wait for goroutines to complete
 func main() {
@@ -59,4 +76,36 @@ func main() {
 	bufferedChannel := make(chan int, 5)
 	go produce(bufferedChannel)
 	go consume(bufferedChannel)
+
+	// Task 5. Separate even and odd channels
+	even := make(chan int)
+	odd := make(chan int)
+	errorChannel := make(chan error)
+	go distributeNumbers(even, odd, errorChannel)
+
+	for {
+		select {
+		case num, ok := <-even:
+			if !ok {
+				even = nil
+			} else {
+				fmt.Printf("Received even: %d\n", num)
+			}
+		case num, ok := <-odd:
+			if !ok {
+				odd = nil
+			} else {
+				fmt.Printf("Received odd: %d\n", num)
+			}
+		case err, ok := <-errorChannel:
+			if ok {
+				fmt.Printf("Error received: %v\n", err)
+			} else {
+				errorChannel = nil
+			}
+		}
+		if even == nil && odd == nil && errorChannel == nil {
+			break
+		}
+	}
 }
